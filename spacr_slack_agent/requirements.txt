@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+requests
+google-adk
+google-cloud-aiplatform
