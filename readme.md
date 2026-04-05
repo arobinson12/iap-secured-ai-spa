@@ -6,6 +6,7 @@ By leveraging Google Identity-Aware Proxy (IAP), federated IdP (Okta), and Cloud
 
 ## Architecture Overview
 
+*(Insert your Architecture Diagram here)*
 ![SPACR Architecture](./images/architecture-diagram.png)
 
 This platform is split into three distinct Cloud Run containers, enforcing the principle of least privilege:
@@ -13,10 +14,15 @@ This platform is split into three distinct Cloud Run containers, enforcing the p
 2. **`spacr-bff`**: The Identity Broker and Security Gateway.
 3. **`spacr_slack_agent`**: The isolated Gemini execution engine.
 
+### The Identity Identity & Routing Flow
+By leveraging Google Identity-Aware Proxy (IAP) integrated with **Cloud Identity for SAML SSO (via Okta)**, this architecture ensures that AI agents remain completely isolated from the public internet while securely acting on behalf of the authenticated human user. 
+
+To achieve this, **IAP is configured with SAML propagation enabled**. When a user authenticates via Okta, IAP intercepts the session, extracts the federated SAML claims, injects them into secure `x-goog-iap-attr-*` HTTP headers, and forwards them downstream to the BFF backend for processing.
+
 ### The BFF Core Responsibilities
 The `spacr-bff` acts as the central nervous system of this architecture, handling six critical functions so the downstream agents don't have to:
 
-1. **Identity & SAML Parsing**: Reads `x-goog-iap-attr-` headers, decodes the URL-encoded strings from the IAP perimeter, and packages them into a JSON response for the UI.
+1. **Identity & SAML Parsing**: Reads the injected `x-goog-iap-attr-` headers securely passed down by IAP, decodes the URL-encoded strings, and packages them into a JSON response for the UI.
 2. **3P OAuth 2.0 Flow**: Generates the 3rd-party (Slack) authorization URL, catches the `/callback` redirect, exchanges the auth code for an access token, and returns the user to the SPA.
 3. **State Management & Token Vaulting**: Securely reads and writes the user's On-Behalf-Of (OBO) Slack tokens to a serverless Firestore database, keeping the BFF horizontally scalable and stateless.
 4. **A2A Authentication**: Utilizes Google Auth libraries to generate an ephemeral OIDC identity token, attaching it as a Bearer token to prove its identity to the internal, locked-down Agent container.
@@ -55,7 +61,8 @@ Before deploying these containers, you must have the following configured:
 * **Identity & Networking**:
   * An Internal HTTP(S) Load Balancer.
   * Identity-Aware Proxy (IAP) enabled on the Load Balancer backend service.
-  * Google Cloud Identity federated with your corporate IdP (e.g., Okta, Entra ID).
+  * Google Cloud Identity configured for SAML SSO and federated with Okta.
+  * **CRITICAL:** IAP must have **SAML propagation enabled** so that Okta claims are successfully injected into the headers and passed to the backend.
 * **Database & Secrets**:
   * A Firestore Database running in Native Mode.
   * Secret Manager populated with your `GEMINI_API_KEY`, `SLACK_CLIENT_ID`, and `SLACK_CLIENT_SECRET`.
