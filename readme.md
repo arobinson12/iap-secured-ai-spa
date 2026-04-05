@@ -13,7 +13,7 @@ This platform is split into three distinct Cloud Run containers, enforcing the p
 2. **`spacr-bff`**: The Identity Broker and Security Gateway.
 3. **`spacr_slack_agent`**: The isolated Gemini execution engine.
 
-### The Identity Identity & Routing Flow
+### The Identity & Routing Flow
 By leveraging Google Identity-Aware Proxy (IAP) integrated with **Cloud Identity for SAML SSO (via Okta)**, this architecture ensures that AI agents remain completely isolated from the public internet while securely acting on behalf of the authenticated human user. 
 
 To achieve this, **IAP is configured with SAML propagation enabled**. When a user authenticates via Okta, IAP intercepts the session, extracts the federated SAML claims, injects them into secure `x-goog-iap-attr-*` HTTP headers, and forwards them downstream to the BFF backend for processing.
