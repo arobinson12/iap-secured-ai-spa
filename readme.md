@@ -6,7 +6,7 @@ By leveraging Google Identity-Aware Proxy (IAP), federated IdP (Okta), and Cloud
 
 ## Architecture Overview
 
-`![SPACR Architecture](./images/architecture-diagram.png)`
+![SPACR Architecture](./images/architecture-diagram.png)
 
 This platform is split into three distinct Cloud Run containers, enforcing the principle of least privilege:
 1. **`spacr-spa`**: A stateless React/HTML frontend. Contains no secrets and performs no AI logic.
@@ -30,17 +30,17 @@ The `spacr-bff` acts as the central nervous system of this architecture, handlin
 The architecture provides a seamless, Zero-Trust user journey:
 
 1. **Federated Authentication:** The user authenticates via Okta.
-`![Okta Login](./images/okta-login.png)`
+![Okta Login](./images/okta-login.png)
 
 2. **Dashboard Initialization:** The SPA loads, fetching SAML claims from IAP. If no OBO token is vaulted, access to the agent is restricted.
-`![SPA No Token](./images/spa-no-token.png)`
+![SPA No Token](./images/spa-no-token.png)
 
 3. **Invisible SSO & Consent:** The user connects to Slack. Because the Workspace is federated, Google SSO handles the handshake, only prompting for required OAuth scopes.
 `![Google SSO](./images/google-sso.png)`
-`![Slack Consent](./images/slack-consent.png)`
+![Slack Consent](./images/slack-consent.png)
 
 4. **Secure Execution & AI Firewall:** The token is vaulted. The user can successfully invoke the agent to read/write to Slack. If a malicious prompt is detected, Model Armor intercepts and rejects it instantly.
-`![SPA Execution](./images/spa-execution.png)`
+![SPA Execution](./images/spa-execution.png)
 
 ---
 
